@@ -1,0 +1,103 @@
+/* ─────────────────────────────────────────────────────────────
+   DeepSearch Design Tokens — 정본 v1 (2026-08-10)
+
+   원천: deepsearch-hq/brand-kb · tokens/design-tokens.css
+   기준: brand-kb docs/04-design · index-fe src/design/tokens.css
+
+   ▸ 이 파일이 색·타이포·간격·모션의 단일 원천입니다.
+   ▸ 각 저장소는 이 파일을 복사해 사용하고, 저장소 안에서 값을 고치지 않습니다.
+     값을 바꿔야 하면 이 파일을 먼저 고치고 각 저장소로 내려보냅니다.
+   ▸ 프레임워크 브릿지(Tailwind @theme 등)와 프리미티브 클래스는
+     각 저장소가 이 파일 뒤에 따로 둡니다. 이 파일에는 값만 둡니다.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── 무채색 9단계 — 기본은 무채색과 여백 */
+  --g0: #ffffff;
+  --g50: #f7f8f9;
+  --g100: #eef0f2;
+  --g200: #e2e5e9;
+  --g300: #c9cfd6;
+  --g400: #98a1ac;
+  --g500: #6b7480;
+  --g700: #3d4550;
+  --g900: #14181e;
+
+  /* ── Signal — 채도색은 이 한 개뿐.
+        의미(신호·CTA·활성)가 있을 때만, 화면당 1~2곳 */
+  --signal: #0c74ee;
+  --signal-fg: #ffffff;
+
+  /* ── 의미 매핑 — 화면 코드는 원색(--g*)이 아니라 이쪽을 씁니다 */
+  --bg: var(--g0);
+  --surface: var(--g50);
+  --surface-2: var(--g100);
+  --ink: var(--g900);
+  --ink-muted: var(--g500);
+  --ink-faint: var(--g400);
+
+  /* ── 라인 3단계 — 구조 · 보조 · 키워드 */
+  --line-structure: rgb(20 24 30 / 14%);
+  --line-support: rgb(20 24 30 / 8%);
+  --line-keyword: rgb(20 24 30 / 24%);
+
+  /* ── 타이포 — 본문 Pretendard, 숫자·데이터·라벨 SF Mono */
+  --font-sans: Pretendard, 'Pretendard Variable', -apple-system,
+    BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'SF Mono', ui-monospace, Menlo, Monaco, monospace;
+
+  /* ── 타입 스케일 6단계 — 전역 축소 배율을 쓰지 않습니다 */
+  --t-display: 3.5rem; /* 56 */
+  --t-h1: 2.5rem; /* 40 */
+  --t-h2: 1.75rem; /* 28 */
+  --t-h3: 1.25rem; /* 20 */
+  --t-body: 1rem; /* 16 */
+  --t-label: 0.75rem; /* 12 — mono 마이크로 라벨 */
+
+  /* ── weight — 600 주력 */
+  --w-regular: 400;
+  --w-medium: 500;
+  --w-semibold: 600;
+  --w-bold: 700;
+
+  /* ── spacing — 8배수만 */
+  --s1: 8px;
+  --s2: 16px;
+  --s3: 24px;
+  --s4: 32px;
+  --s5: 40px;
+  --s6: 48px;
+  --s8: 64px;
+  --s10: 80px;
+  --s12: 96px;
+
+  /* ── radius 3단계 */
+  --r-sm: 8px;
+  --r-lg: 24px;
+  --r-pill: 100px;
+
+  /* ── 모션 — 정렬되는 서사. 등장 1회 후 정지 */
+  --ease-align: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 0.3s;
+  --dur-base: 0.36s;
+  --dur-slow: 0.45s;
+
+  /* ── 레이아웃 */
+  --container: 1200px;
+
+  /* ── 데이터 방향성 — ⚠️ 확정 필요
+        index-fe 토큰은 상승 그린(#5fd08a) / 하락 레드(#d8483a),
+        index-fe design/NEXT.md 의 결정 기록은 "상승=빨강 / 하락=파랑(KR 증시 관행)".
+        두 기록이 어긋나 있어 값을 잠그지 않았습니다. 확정 후 여기에 넣습니다.
+        데이터 방향색은 차트·수치에만 쓰고 UI 요소에는 쓰지 않습니다. */
+  /* --up: TBD; */
+  /* --down: TBD; */
+}
+
+/* ─────────────────────────────────────────────────────────────
+   이 파일에 넣지 않는 것
+
+   · 제품별 색 (예: indices 지수 패밀리 구분색) — 해당 저장소에서 정의
+   · 컴포넌트 스타일 — 각 저장소의 컴포넌트와 스토리북
+   · 프레임워크 브릿지 — Tailwind 저장소는 @theme inline 을 이 파일 뒤에 둠
+   ───────────────────────────────────────────────────────────── */
