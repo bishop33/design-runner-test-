@@ -140,6 +140,15 @@ body {
   background: var(--bg);
 }
 
+/* 아이콘은 Lucide 에서 가져온다 (design-rules.md). 크기·여백은 토큰만 쓴다. */
+.card-icon {
+  display: block;
+  width: var(--s3);
+  height: var(--s3);
+  margin-bottom: var(--s2);
+  color: var(--ink-muted);
+}
+
 .card-title {
   margin: 0 0 var(--s1);
   font-size: var(--t-h3);
