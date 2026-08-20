@@ -16,6 +16,9 @@
 | `design-tokens.css` | 색·타이포·간격·모션의 확정 값 (brand-kb 사본, **수정 금지**) |
 | `design-rules.md` | 시각·문구 판단 기준 |
 | `AGENTS.md` | 에이전트가 작업 전에 읽는 지침 |
+| `app/` | 준비 — 임신·출산·육아 체크리스트 MVP (아래) |
+| `tools/` | 시트 CSV 스냅샷과 변환 스크립트 |
+| `docs/` | 기획·데이터 분석 문서 |
 
 ## 보는 법
 
@@ -24,6 +27,48 @@
 ```bash
 cd ~/work/design-runner-test && python3 -m http.server 8082
 ```
+
+랜딩 페이지는 <http://localhost:8082/>, 앱은 <http://localhost:8082/app/> 입니다.
+`file://` 로 열면 콘텐츠 JSON 을 읽지 못하므로 정적 서버가 필요합니다.
+
+---
+
+## 준비 — 임신부터 출산 후 24개월까지
+
+임신부터 출산 후 24개월까지 해야 할 일을 시기별로 확인하고 부부가 함께 기록하는 모바일 웹 MVP입니다.
+[구글 시트](https://docs.google.com/spreadsheets/d/1kC-AZzhLd43BWOjHFNejDOtN7USQxusJK0Obw8jr0uo/htmlview)
+356개 항목을 그대로 불러와 씁니다. 기획과 데이터 분석은 [docs/service-plan.md](docs/service-plan.md)에 있습니다.
+
+```
+app/
+  index.html          앱 셸
+  app.css             앱 스타일 — design-tokens.css 를 소비
+  data/content.json   시트에서 생성한 콘텐츠 원본 (읽기 전용)
+  src/
+    app.js            해시 라우터
+    dates.js          기준일 기반 일정 계산
+    store.js          사용자 상태 (localStorage 어댑터)
+    model.js          콘텐츠 + 상태 결합, 개인화, 우선순위
+    ui.js             상태·중요도·유형의 시각 체계
+    icons.js          Lucide 아이콘 path
+    views/            9개 화면
+tools/
+  content.source.csv  시트 CSV 스냅샷
+  sheet-to-content.py 스냅샷 → app/data/content.json
+```
+
+시트를 고친 뒤 앱에 반영하려면 CSV를 다시 내려받아 `tools/content.source.csv` 로 덮고 실행합니다.
+
+```bash
+python3 tools/sheet-to-content.py
+```
+
+### 원칙
+
+- 콘텐츠 원본과 사용자 상태를 분리합니다. `content.json` 에는 완료 여부·메모를 쓰지 않습니다.
+- 일정은 출산 예정일·입원일·출생일에서 계산합니다. 콘텐츠에 날짜를 넣지 않습니다.
+- 의료·지원 정책·비용을 임의로 만들지 않습니다. 원본에 값이 없으면 `확인 필요`로 둡니다.
+- 저장은 `store.js` 의 `loadState`/`saveState` 뒤에 있어 DB로 옮길 때 두 함수만 바꿉니다.
 
 ## 규칙
 
