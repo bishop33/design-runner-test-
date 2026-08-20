@@ -129,7 +129,8 @@ export default {
 
       <div class="block">
         <h3>메모 <span class="hint">부부가 함께 봅니다</span></h3>
-        <textarea data-role="note" placeholder="예: 병원에 전화해서 확인함. 담당 간호사 안내 받음." aria-label="메모"></textarea>
+        <textarea data-role="note" rows="3" enterkeyhint="enter"
+          placeholder="예: 병원에 전화해서 확인함. 담당 간호사 안내 받음." aria-label="메모"></textarea>
         <button class="btn btn-quiet" data-role="addNote" style="margin-top:var(--s1)">${icon('plus', 14)} 메모 남기기</button>
         ${notes.map((n) => `<div class="note-item">
           <div class="who">${esc(store.memberName(n.by))} · ${esc(fmtStamp(n.at))}
@@ -142,7 +143,7 @@ export default {
         <div class="seg" role="group" aria-label="반응">
           ${REACTIONS.map((r) => `<button type="button" data-role="reaction" data-value="${esc(r)}" aria-pressed="false">${esc(r)}</button>`).join('')}
         </div>
-        <textarea data-role="story" placeholder="좋았던 점·아쉬웠던 점·우리에게 맞았는지를 적어 두면 다음 결정이 쉬워집니다." aria-label="경험담" style="margin-top:var(--s1)"></textarea>
+        <textarea data-role="story" placeholder="좋았던 점·아쉬웠던 점·우리에게 맞았는지를 적어 두면 다음 결정이 쉬워집니다." aria-label="경험담" rows="3" style="margin-top:var(--s1)"></textarea>
         <button class="btn btn-quiet" data-role="addStory" style="margin-top:var(--s1)">${icon('plus', 14)} 경험 남기기</button>
         ${stories.length
           ? stories.map((x) => `<div class="story"><div class="who">${esc(x.reaction)} · ${esc(store.memberName(x.by))} · ${esc(fmtStamp(x.at))}</div><p>${esc(x.text)}</p></div>`).join('')

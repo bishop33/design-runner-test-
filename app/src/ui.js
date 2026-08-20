@@ -87,6 +87,25 @@ export function itemList(items, opts) {
   return `<ul class="divide">${items.map((i) => itemRow(i, opts)).join('')}</ul>`;
 }
 
+/**
+ * 목록을 다시 그리지 않고 한 줄만 갱신합니다.
+ * 356개를 전부 펼친 상태에서 상태를 바꿀 때 전체 재렌더(수백 ms)를 피하려고 씁니다.
+ */
+export function patchRow(rowEl, item, { showWhen = true } = {}) {
+  const btn = rowEl.querySelector('.status-btn');
+  btn.dataset.status = item.status;
+  btn.title = item.status;
+  btn.setAttribute('aria-label', `${item.title} 상태: ${item.status}. 눌러서 다음 상태로 바꿉니다`);
+  btn.innerHTML = icon(STATUS_ICON[item.status] || 'circle', 22);
+
+  rowEl.classList.toggle('is-done', item.status === '완료');
+  rowEl.classList.toggle('is-skip', item.status === '해당 없음');
+
+  const when = rowEl.querySelector('.row-when');
+  when.textContent = showWhen ? item.whenLabel : item.entry.doneAt || '';
+  when.classList.toggle('is-late', !item.done && item.when === 'past');
+}
+
 /** 상태 버튼을 누르면 다음 상태로. 완료 다음은 확인 전으로 돌아옵니다. */
 export function nextStatus(cur) {
   const i = STATUSES.indexOf(cur);

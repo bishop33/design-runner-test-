@@ -4,16 +4,36 @@
 // 상세를 열지 않아도 제목·시기·상태·중요도·유형을 한 줄에서 읽을 수 있어야 합니다.
 
 import { getContent, currentBandId, bandWindow } from '../model.js';
-import { esc, itemList, TYPE_GROUPS } from '../ui.js';
+import { esc, itemList, patchRow, TYPE_GROUPS } from '../ui.js';
 import { icon } from '../icons.js';
 import { fmtShort, today as td } from '../dates.js';
 import * as store from '../store.js';
 
 function defaults() {
-  return { group: 'all', topic: '전체', hideDone: false, open: null };
+  return { group: 'all', topic: '전체', hideDone: false, open: null, showFilters: false };
 }
 
 export default {
+  /**
+   * 완료 숨기기가 꺼져 있으면 상태를 바꿔도 목록 구성이 달라지지 않습니다.
+   * 그럴 때는 전체를 다시 그리지 않고 해당 줄과 구간 숫자만 고칩니다.
+   */
+  patch({ root, view, ui, itemId }) {
+    if (ui.timeline?.hideDone) return false;
+    const item = view.byId[itemId];
+    const rowBtn = root.querySelector(`.timeline .status-btn[data-id="${itemId}"]`);
+    if (!item || !rowBtn) return false;
+
+    patchRow(rowBtn.closest('.row'), item, { showWhen: false });
+
+    const progEl = root.querySelector(`[data-prog="${item.bandId}"]`);
+    if (progEl && !progEl.textContent.includes('표시')) {
+      const all = view.visible.filter((i) => i.bandId === item.bandId);
+      progEl.textContent = `${all.filter((i) => i.done).length}/${all.length} 완료`;
+    }
+    return true;
+  },
+
   async render({ view, ui }) {
     const c = getContent();
     ui.timeline ||= defaults();
@@ -34,6 +54,8 @@ export default {
 
     // 필터를 걸면 결과가 접힌 구간에 숨어 안 보이므로, 필터 중에는 전부 펼칩니다.
     const filtering = f.group !== 'all' || f.topic !== '전체';
+    // 패널을 접어 둬도 걸려 있는 필터가 있으면 버튼에 표시합니다.
+    const subFilterOn = f.topic !== '전체' || f.hideDone;
 
     const grouped = new Map(c.bands.map((b) => [b.id, []]));
     let shown = 0;
@@ -67,21 +89,29 @@ export default {
 
     <main class="main" id="main">
       <div class="tl-tools">
-        <div class="chips" role="group" aria-label="콘텐츠 유형 필터">
-          ${TYPE_GROUPS.map((g) =>
-            `<button class="chip" data-group="${g.key}" aria-pressed="${f.group === g.key}">${g.label}</button>`).join('')}
-        </div>
         <div class="line">
-          <span class="type-mark">${icon('list-filter', 16)}</span>
-          <select data-role="topic" aria-label="주제 필터">
-            ${topics.map((t) => `<option value="${esc(t)}"${t === f.topic ? ' selected' : ''}>${esc(t)}</option>`).join('')}
-          </select>
-          <label class="toggle">
-            <input type="checkbox" data-role="hideDone"${f.hideDone ? ' checked' : ''}> 완료 숨기기
+          <div class="chips" role="group" aria-label="콘텐츠 유형 필터">
+            ${TYPE_GROUPS.map((g) =>
+              `<button class="chip" data-group="${g.key}" aria-pressed="${f.group === g.key}">${g.label}</button>`).join('')}
+          </div>
+          <button class="btn-icon tl-more${subFilterOn ? ' is-on' : ''}" data-role="toggleFilters"
+            aria-expanded="${f.showFilters}" aria-label="주제와 보기 설정">${icon('list-filter', 20)}</button>
+        </div>
+
+        <div class="tl-panel"${f.showFilters ? '' : ' hidden'}>
+          <label class="tl-panel-row">
+            <span>주제</span>
+            <select data-role="topic" aria-label="주제 필터">
+              ${topics.map((t) => `<option value="${esc(t)}"${t === f.topic ? ' selected' : ''}>${esc(t)}</option>`).join('')}
+            </select>
           </label>
-          <button class="btn-quiet" data-role="${filtering ? 'clearFilter' : 'toggleAll'}" style="margin-left:auto">
-            ${filtering ? '필터 해제' : f.open.size > 2 ? '모두 접기' : '모두 펼치기'}
-          </button>
+          <div class="tl-panel-row">
+            <button class="chip" data-role="hideDone" aria-pressed="${f.hideDone}">완료 숨기기</button>
+            <button class="chip" data-role="toggleAll">${f.open.size > 2 ? '모두 접기' : '모두 펼치기'}</button>
+            ${subFilterOn || f.group !== 'all'
+              ? '<button class="chip" data-role="clearFilter">필터 해제</button>'
+              : ''}
+          </div>
         </div>
       </div>
 
@@ -97,9 +127,8 @@ export default {
                   <span class="range">${esc(b.band)}</span>
                   ${when === 'now' ? '<span class="now-badge">지금</span>' : ''}
                 </span>
-                <span class="prog">${w ? `${fmtShort(w.from)} ~ ${fmtShort(w.to)} · ` : ''}${
-                  filtering ? `${items.length}개 표시` : `${doneN}/${total} 완료`
-                }</span>
+                <span class="prog">${w ? `${fmtShort(w.from)} ~ ${fmtShort(w.to)} · ` : ''}<span
+                  data-prog="${b.id}">${filtering ? `${items.length}개 표시` : `${doneN}/${total} 완료`}</span></span>
               </span>
             </button>
             <div class="band-body"${open ? '' : ' hidden'}>
@@ -124,25 +153,37 @@ export default {
     root.querySelectorAll('[data-group]').forEach((el) =>
       el.addEventListener('click', () => { f.group = el.dataset.group; render(); }));
 
-    root.querySelector('[data-role="topic"]').addEventListener('change', (e) => {
-      f.topic = e.target.value;
+    root.querySelector('[data-role="toggleFilters"]').addEventListener('click', () => {
+      f.showFilters = !f.showFilters;
       render();
     });
 
-    root.querySelector('[data-role="hideDone"]').addEventListener('change', (e) => {
-      f.hideDone = e.target.checked;
+    // 패널은 좁은 화면에서 목록을 가리므로, 고르면 바로 닫습니다.
+    // 무엇이 걸려 있는지는 필터 버튼 색으로 남습니다.
+    root.querySelector('[data-role="topic"]').addEventListener('change', (e) => {
+      f.topic = e.target.value;
+      f.showFilters = false;
+      render();
+    });
+
+    root.querySelector('[data-role="hideDone"]').addEventListener('click', () => {
+      f.hideDone = !f.hideDone;
+      f.showFilters = false;
       render();
     });
 
     root.querySelector('[data-role="toggleAll"]')?.addEventListener('click', () => {
       const all = [...root.querySelectorAll('[data-role="band"]')].map((el) => el.dataset.band);
       f.open = f.open.size > 2 ? new Set() : new Set(all);
+      f.showFilters = false;
       render();
     });
 
     root.querySelector('[data-role="clearFilter"]')?.addEventListener('click', () => {
       f.group = 'all';
       f.topic = '전체';
+      f.hideDone = false;
+      f.showFilters = false;
       render();
     });
 

@@ -11,10 +11,18 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  /* 스크롤이 끝에 닿았을 때 페이지 전체가 딸려 오지 않게 */
+  overscroll-behavior-y: none;
+}
 
 body {
   margin: 0;
+  /* 탭할 때 회색 사각형이 번쩍이지 않게. 초점 표시는 :focus-visible 로 따로 둡니다 */
+  -webkit-tap-highlight-color: transparent;
+  /* 더블탭 확대를 끄면 탭 반응이 즉시 옵니다. 손가락 확대는 그대로 됩니다 */
+  touch-action: manipulation;
   background: var(--surface);
   color: var(--ink);
   font-family: var(--font-sans);
@@ -39,6 +47,9 @@ a { color: inherit; }
   left: var(--s2);
   top: calc(var(--s2) * -4);
   z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--s6);
   padding: var(--s1) var(--s2);
   background: var(--bg);
   border: 1px solid var(--line-structure);
@@ -67,7 +78,8 @@ a { color: inherit; }
 
 .main {
   flex: 1;
-  padding: 0 var(--s2) var(--s10);
+  /* 하단 탭바(48px + 안전영역) 위로 본문이 끝나도록 */
+  padding: 0 var(--s2) calc(var(--s10) + env(safe-area-inset-bottom));
 }
 
 @media (min-width: 768px) {
@@ -84,7 +96,7 @@ a { color: inherit; }
   align-items: center;
   gap: var(--s1);
   height: var(--s8);
-  padding: 0 var(--s2);
+  padding: 0 max(var(--s2), env(safe-area-inset-left)) 0 max(var(--s2), env(safe-area-inset-right));
   background: var(--bg);
   border-bottom: 1px solid var(--line-support);
 }
@@ -133,6 +145,7 @@ a { color: inherit; }
   min-height: var(--s6);
   text-decoration: none;
   color: var(--ink-muted);
+  -webkit-tap-highlight-color: transparent;
   font-family: var(--font-mono);
   font-size: var(--t-label);
 }
@@ -145,7 +158,7 @@ a { color: inherit; }
 
 .section > header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--s1);
   margin-bottom: var(--s2);
 }
@@ -163,7 +176,12 @@ a { color: inherit; }
 }
 
 .section > header .more {
+  display: inline-flex;
+  align-items: center;
   margin-left: auto;
+  margin-right: calc(var(--s1) * -1);
+  padding: 0 var(--s1);
+  min-height: var(--s6);
   font-family: var(--font-mono);
   font-size: var(--t-label);
   color: var(--signal);
@@ -180,9 +198,10 @@ a { color: inherit; }
 /* ── 항목 행 ─────────────────────────────────────────── */
 
 .row {
+  position: relative;
   display: grid;
-  min-height: var(--s6);
-  grid-template-columns: var(--s4) 1fr auto;
+  min-height: var(--s8);
+  grid-template-columns: var(--s6) 1fr auto;
   align-items: start;
   gap: var(--s1);
   padding: var(--s1) 0;
@@ -210,6 +229,14 @@ a { color: inherit; }
   font-weight: var(--w-medium);
   line-height: 1.45;
   cursor: pointer;
+}
+
+/* 제목 글자만이 아니라 줄 전체가 탭 영역이 되도록 덮습니다.
+   상태 버튼은 아래 z-index 로 이 위에 올려 둡니다. */
+.row-title::after {
+  content: '';
+  position: absolute;
+  inset: 0;
 }
 
 .row-meta {
@@ -242,17 +269,21 @@ a { color: inherit; }
 
 /* 상태 버튼 — 원형 아이콘 하나로 5단계를 표현 */
 .status-btn {
+  position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
-  width: var(--s4);
-  height: var(--s4);
-  margin-top: -4px;
+  width: var(--s6);
+  height: var(--s6);
+  margin: calc(var(--s1) * -1) 0 0 calc(var(--s1) * -1);
   background: none;
   border: 0;
   border-radius: var(--r-pill);
   color: var(--ink-faint);
   cursor: pointer;
 }
+
+.status-btn:active { background: var(--surface-2); }
 
 .status-btn[data-status='확인했어요'],
 .status-btn[data-status='준비 중'] { color: var(--ink-muted); }
@@ -295,6 +326,8 @@ a { color: inherit; }
   display: flex;
   gap: var(--s1);
   overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   padding-bottom: var(--s1);
   margin-inline: calc(var(--s2) * -1);
@@ -304,7 +337,8 @@ a { color: inherit; }
 
 .chip {
   flex: none;
-  height: var(--s4);
+  scroll-snap-align: start;
+  height: var(--s6);
   padding: 0 var(--s2);
   background: var(--bg);
   border: 1px solid var(--line-structure);
@@ -346,7 +380,7 @@ a { color: inherit; }
 .btn-quiet {
   flex: none;
   white-space: nowrap;
-  min-height: var(--s4);
+  min-height: var(--s6);
   padding: 0 var(--s2);
   border-color: var(--line-support);
   font-family: var(--font-mono);
@@ -357,8 +391,8 @@ a { color: inherit; }
 .btn-icon {
   display: grid;
   place-items: center;
-  width: var(--s5);
-  height: var(--s5);
+  width: var(--s6);
+  height: var(--s6);
   background: none;
   border: 0;
   border-radius: var(--r-sm);
@@ -387,11 +421,13 @@ a { color: inherit; }
   margin-top: 2px;
 }
 
-input[type='date'],
-input[type='text'],
+/* 타입을 나열하면 새 입력 타입이 빠집니다. input 전체를 잡고 체크박스만 뺍니다. */
+input:not([type='checkbox']):not([type='radio']),
 select,
 textarea {
   width: 100%;
+  /* 16px(--t-body) 미만이면 iOS 가 초점 시 화면을 확대합니다. 줄이지 마세요. */
+  font-size: var(--t-body);
   min-height: var(--s6);
   padding: var(--s1) var(--s2);
   background: var(--bg);
@@ -403,12 +439,18 @@ textarea {
 
 textarea { min-height: var(--s10); resize: vertical; line-height: 1.6; }
 
+/* iOS 는 type=search 에 기본 스타일을 씌워 높이를 무시합니다 */
+input[type='search'] { -webkit-appearance: none; appearance: none; }
+input[type='search']::-webkit-search-decoration,
+input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
+
 .seg { display: flex; flex-wrap: wrap; gap: var(--s1); }
 
 .seg button {
   flex: 1 1 auto;
   min-width: calc(var(--s10) + var(--s2));
   min-height: var(--s6);
+  font-size: var(--t-body);
   padding: 0 var(--s2);
   background: var(--bg);
   border: 1px solid var(--line-structure);
@@ -451,45 +493,68 @@ textarea { min-height: var(--s10); resize: vertical; line-height: 1.6; }
 
 /* ── 타임라인 ────────────────────────────────────────── */
 
+/* 세로 공간이 귀한 화면이라 상시 노출은 유형 칩 한 줄(48px)만 두고,
+   주제·완료 숨기기·펼치기는 필터 버튼 뒤 패널로 접어 둡니다. */
 .tl-tools {
   position: sticky;
   top: var(--s8);
   z-index: 3;
   background: var(--bg);
-  padding: var(--s2) 0 var(--s1);
+  padding: var(--s1) 0;
   border-bottom: 1px solid var(--line-support);
-  display: flex;
-  flex-direction: column;
-  gap: var(--s1);
 }
 
 .tl-tools .line {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: var(--s1);
 }
 
-.tl-tools select {
-  flex: 1 1 var(--s12);
-  width: auto;
+.tl-tools .chips {
+  flex: 1;
   min-width: 0;
-  min-height: var(--s4);
-  padding: 0 var(--s1);
-  font-family: var(--font-mono);
-  font-size: var(--t-label);
-  border-color: var(--line-support);
+  margin-inline: calc(var(--s2) * -1) 0;
+  padding-bottom: 0;
 }
 
-.toggle {
-  display: inline-flex;
+.tl-more {
+  flex: none;
+  border: 1px solid var(--line-support);
+  border-radius: var(--r-sm);
+}
+
+/* 접어 둔 필터가 걸려 있으면 버튼에 표시 */
+.tl-more.is-on {
+  color: var(--signal);
+  border-color: var(--signal);
+}
+
+.tl-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+  padding-top: var(--s1);
+}
+
+.tl-panel[hidden] { display: none; }
+
+.tl-panel-row {
+  display: flex;
   align-items: center;
   gap: var(--s1);
+  flex-wrap: wrap;
+}
+
+.tl-panel-row > span {
+  flex: none;
   font-family: var(--font-mono);
   font-size: var(--t-label);
   color: var(--ink-muted);
-  cursor: pointer;
-  white-space: nowrap;
+}
+
+.tl-panel select {
+  flex: 1;
+  min-width: 0;
 }
 
 .timeline { position: relative; padding-left: var(--s3); }
@@ -507,8 +572,8 @@ textarea { min-height: var(--s10); resize: vertical; line-height: 1.6; }
 
 .band {
   position: relative;
-  /* 상단바 + 필터 바에 가리지 않게 */
-  scroll-margin-top: calc(var(--s8) + var(--s12));
+  /* 상단바(64) + 필터 바(64)에 가리지 않게 */
+  scroll-margin-top: calc(var(--s8) * 2);
 }
 
 .band::before {
@@ -575,7 +640,14 @@ textarea { min-height: var(--s10); resize: vertical; line-height: 1.6; }
 .band[data-when='now'] .band-head h3 { color: var(--signal); }
 .band[data-when='past'] .band-head { color: var(--ink-muted); }
 
-.band-body { padding-bottom: var(--s2); border-bottom: 1px solid var(--line-support); }
+/* 구간을 전부 펼치면 356줄이 됩니다. 화면 밖 구간은 브라우저가 레이아웃·페인트를
+   건너뛰게 해서 스크롤이 끊기지 않게 합니다. */
+.band-body {
+  padding-bottom: var(--s2);
+  border-bottom: 1px solid var(--line-support);
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--s12);
+}
 .band-body[hidden] { display: none; }
 
 .now-badge {
@@ -720,6 +792,14 @@ textarea { min-height: var(--s10); resize: vertical; line-height: 1.6; }
   font-size: var(--t-label);
   color: var(--ink-muted);
   padding-bottom: var(--s1);
+}
+
+/* 가로로 눕히면 세로가 400px 남짓입니다. 고정 영역을 줄여 본문을 확보합니다. */
+@media (max-height: 480px) {
+  .topbar { height: var(--s6); }
+  .topbar h1 .sub { display: none; }
+  .tl-tools { top: var(--s6); }
+  .band { scroll-margin-top: calc(var(--s6) + var(--s8)); }
 }
 
 /* ── 등장 1회 ────────────────────────────────────────── */

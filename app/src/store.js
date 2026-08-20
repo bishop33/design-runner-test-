@@ -87,10 +87,14 @@ export function subscribe(fn) {
   return () => listeners.delete(fn);
 }
 
-async function commit(mutate) {
+/**
+ * @param mutate 상태를 바꾸는 함수
+ * @param hint   구독자가 전체 다시 그리기 대신 부분 갱신을 고를 수 있게 하는 단서
+ */
+async function commit(mutate, hint = null) {
   mutate(state);
   await saveState(state);
-  listeners.forEach((fn) => fn(state));
+  listeners.forEach((fn) => fn(state, hint));
 }
 
 const uid = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
@@ -142,7 +146,7 @@ export async function setStatus(item, status) {
     }
     d.items[item.id] = e;
     pushActivity(d, { itemId: item.id, title: item.title, kind: '상태', detail: `${prev} → ${status}` });
-  });
+  }, { kind: 'status', itemId: item.id });
 }
 
 export async function setDoneAt(item, date) {

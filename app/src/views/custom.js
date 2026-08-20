@@ -19,7 +19,8 @@ export default {
       <section class="section">
         <header><h2>새 항목</h2></header>
         <label class="field"><span>할 일</span>
-          <input type="text" data-role="title" placeholder="예: 산모수첩 챙기기" maxlength="60"></label>
+          <input type="text" data-role="title" placeholder="예: 산모수첩 챙기기" maxlength="60"
+            enterkeyhint="done" autocomplete="off"></label>
         <label class="field"><span>어느 시기에 두나요</span>
           <select data-role="band">
             ${c.bands.map((b) => `<option value="${b.id}">${esc(b.phase)} · ${esc(b.band)}</option>`).join('')}
@@ -46,8 +47,12 @@ export default {
 
   mount({ root }) {
     const c = getContent();
+    const titleEl = root.querySelector('[data-role="title"]');
+    titleEl.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') { ev.preventDefault(); root.querySelector('[data-role="add"]').click(); }
+    });
     root.querySelector('[data-role="add"]').addEventListener('click', async () => {
-      const title = root.querySelector('[data-role="title"]').value.trim();
+      const title = titleEl.value.trim();
       if (!title) return;
       const band = c.bandById[root.querySelector('[data-role="band"]').value];
       await store.addCustomItem({

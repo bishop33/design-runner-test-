@@ -11,7 +11,9 @@ export default {
     <header class="topbar"><h1>검색</h1></header>
     <main class="main" id="main">
       <div style="padding-top:var(--s2)">
-        <input type="text" data-role="q" value="${esc(q)}" placeholder="예: 출산가방, 예방접종, 조리원" aria-label="검색어">
+        <input type="search" data-role="q" value="${esc(q)}" placeholder="예: 출산가방, 예방접종, 조리원"
+          aria-label="검색어" enterkeyhint="search" autocomplete="off" autocorrect="off"
+          autocapitalize="off" spellcheck="false">
       </div>
       ${q
         ? `<section class="section"><header><h2>결과</h2><span class="count">${hits.length}개</span></header>
@@ -28,6 +30,15 @@ export default {
     el.addEventListener('input', () => {
       clearTimeout(t);
       t = setTimeout(() => { ui.search = el.value; render(); }, 200);
+    });
+    // 모바일 키보드의 '검색'을 누르면 키보드를 내리고 결과를 봅니다.
+    el.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Enter') return;
+      ev.preventDefault();
+      clearTimeout(t);
+      el.blur();
+      ui.search = el.value;
+      render();
     });
   },
 };

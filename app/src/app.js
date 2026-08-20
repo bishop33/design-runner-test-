@@ -33,6 +33,21 @@ const root = document.getElementById('app');
 /** 화면별로 유지되는 UI 상태(필터·펼침). 저장하지 않습니다. */
 export const ui = { timeline: null, topic: null, search: '' };
 
+/**
+ * 화면별 스크롤 위치. 목록에서 상세로 들어갔다 돌아왔을 때
+ * 보던 자리로 돌아오지 않으면 긴 목록에서 길을 잃습니다.
+ */
+const scrollByPath = new Map();
+let activePath = null;
+
+window.addEventListener(
+  'scroll',
+  () => {
+    if (activePath) scrollByPath.set(activePath, window.scrollY);
+  },
+  { passive: true },
+);
+
 function parse() {
   const h = location.hash.replace(/^#/, '') || '/today';
   for (const [re, view, tab] of routes) {
@@ -61,10 +76,11 @@ export async function render() {
   root.removeAttribute('aria-busy');
   route.view.mount?.({ root, view, params: route.params, ui, render });
 
-  if (!location.hash.includes('#/item/')) window.scrollTo(0, 0);
+  activePath = route.path;
+  window.scrollTo(0, scrollByPath.get(route.path) ?? 0);
 }
 
-/* 목록 어디서나 같은 동작: 제목을 누르면 상세, 상태 아이콘을 누르면 다음 상태. */
+/* 목록 어디서나 같은 동작: 줄을 누르면 상세, 상태 아이콘을 누르면 다음 상태. */
 root.addEventListener('click', async (ev) => {
   const btn = ev.target.closest('[data-act]');
   if (!btn || !current) return;
@@ -82,7 +98,19 @@ root.addEventListener('click', async (ev) => {
 });
 
 window.addEventListener('hashchange', render);
-store.subscribe(() => render());
+
+store.subscribe((_state, hint) => {
+  // 상태 하나 바뀔 때마다 356줄을 다시 그리면 손끝에서 멈춤이 느껴집니다.
+  // 화면이 부분 갱신을 지원하면 그쪽에 먼저 맡깁니다.
+  if (hint?.kind === 'status' && current?.route.view.patch) {
+    const view = buildView();
+    if (current.route.view.patch({ root, view, ui, itemId: hint.itemId })) {
+      current.view = view;
+      return;
+    }
+  }
+  render();
+});
 
 (async function boot() {
   try {
