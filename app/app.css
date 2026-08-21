@@ -17,6 +17,13 @@ html {
   overscroll-behavior-y: none;
 }
 
+/* 숫자만 있는 자리. 토큰의 의도대로 mono 는 여기에만 씁니다.
+   한글이 섞인 라벨에 쓰면 글리프가 없어 글자마다 폰트가 달라집니다. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
 body {
   margin: 0;
   /* 탭할 때 회색 사각형이 번쩍이지 않게. 초점 표시는 :focus-visible 로 따로 둡니다 */
@@ -112,7 +119,6 @@ a { color: inherit; }
 
 .topbar .sub {
   display: block;
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   font-weight: var(--w-regular);
   color: var(--ink-muted);
@@ -146,7 +152,6 @@ a { color: inherit; }
   text-decoration: none;
   color: var(--ink-muted);
   -webkit-tap-highlight-color: transparent;
-  font-family: var(--font-mono);
   font-size: var(--t-label);
 }
 
@@ -170,7 +175,6 @@ a { color: inherit; }
 
 .section > header .count,
 .hint {
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   color: var(--ink-muted);
 }
@@ -182,7 +186,6 @@ a { color: inherit; }
   margin-right: calc(var(--s1) * -1);
   padding: 0 var(--s1);
   min-height: var(--s6);
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   color: var(--signal);
   text-decoration: none;
@@ -246,7 +249,6 @@ a { color: inherit; }
   gap: var(--s1);
   line-height: 1.4;
   overflow: hidden;
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   color: var(--ink-muted);
   white-space: nowrap;
@@ -258,8 +260,8 @@ a { color: inherit; }
 .row-meta .sep { color: var(--ink-faint); }
 
 .row-when {
-  font-family: var(--font-mono);
   font-size: var(--t-label);
+  font-variant-numeric: tabular-nums;
   color: var(--ink-muted);
   white-space: nowrap;
   padding-top: 2px;
@@ -299,7 +301,6 @@ a { color: inherit; }
   line-height: 1;
   border-radius: var(--r-pill);
   border: 1px solid transparent;
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   white-space: nowrap;
 }
@@ -383,7 +384,6 @@ a { color: inherit; }
   min-height: var(--s6);
   padding: 0 var(--s2);
   border-color: var(--line-support);
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   color: var(--ink-muted);
 }
@@ -414,7 +414,6 @@ a { color: inherit; }
 
 .field .desc {
   display: block;
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   font-weight: var(--w-regular);
   color: var(--ink-muted);
@@ -481,7 +480,6 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
   flex-wrap: wrap;
   gap: var(--s2);
   margin-top: var(--s1);
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   color: var(--ink-muted);
 }
@@ -547,7 +545,6 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 
 .tl-panel-row > span {
   flex: none;
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   color: var(--ink-muted);
 }
@@ -628,8 +625,8 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 
 .band-head .range,
 .band-head .prog {
-  font-family: var(--font-mono);
   font-size: var(--t-label);
+  font-variant-numeric: tabular-nums;
   color: var(--ink-muted);
   font-weight: var(--w-regular);
   white-space: nowrap;
@@ -657,7 +654,6 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
   border: 1px solid var(--signal);
   border-radius: var(--r-pill);
   color: var(--signal);
-  font-family: var(--font-mono);
   font-size: var(--t-label);
 }
 
@@ -676,7 +672,6 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
   flex-wrap: wrap;
   gap: var(--s1);
   margin-top: var(--s2);
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   color: var(--ink-muted);
 }
@@ -684,7 +679,6 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 .block { padding: var(--s3) 0; border-top: 1px solid var(--line-support); }
 
 .block h3 {
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   font-weight: var(--w-regular);
   color: var(--ink-muted);
@@ -694,7 +688,6 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 .facts { display: grid; grid-template-columns: auto 1fr; gap: var(--s1) var(--s2); }
 
 .facts dt {
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   color: var(--ink-muted);
   padding-top: 4px;
@@ -726,7 +719,6 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 .story + .story { margin-top: var(--s1); }
 
 .story .who {
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   color: var(--ink-muted);
 }
@@ -734,7 +726,6 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 .note-item { padding: var(--s2) 0; border-top: 1px solid var(--line-support); }
 
 .note-item .who {
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   color: var(--ink-muted);
   display: flex;
@@ -749,8 +740,8 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 .log { display: grid; grid-template-columns: auto 1fr; gap: var(--s1) var(--s2); }
 
 .log dt {
-  font-family: var(--font-mono);
   font-size: var(--t-label);
+  font-variant-numeric: tabular-nums;
   color: var(--ink-muted);
   white-space: nowrap;
   padding-top: 3px;
@@ -788,11 +779,109 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 .steps {
   display: flex;
   gap: var(--s1);
-  font-family: var(--font-mono);
   font-size: var(--t-label);
   color: var(--ink-muted);
   padding-bottom: var(--s1);
 }
+
+/* ── 되돌리기 토스트 ─────────────────────────────────── */
+
+.toast {
+  position: fixed;
+  z-index: 6;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--s8) + env(safe-area-inset-bottom) + var(--s1));
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  width: calc(100% - var(--s4));
+  max-width: calc(var(--app-width) - var(--s4));
+  padding: var(--s1) var(--s1) var(--s1) var(--s2);
+  background: var(--ink);
+  color: var(--g0);
+  border-radius: var(--r-sm);
+}
+
+.toast[hidden] { display: none; }
+
+.toast > span {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--t-label);
+}
+
+.toast button {
+  flex: none;
+  min-height: var(--s5);
+  padding: 0 var(--s2);
+  background: none;
+  border: 1px solid var(--line-keyword);
+  border-color: rgb(255 255 255 / 32%);
+  border-radius: var(--r-sm);
+  color: var(--g0);
+  font-weight: var(--w-semibold);
+  cursor: pointer;
+}
+
+.toast button[data-toast='close'] {
+  display: grid;
+  place-items: center;
+  width: var(--s5);
+  padding: 0;
+  border-color: transparent;
+}
+
+/* ── 상세 하단 고정 액션 ─────────────────────────────── */
+
+.detail-act {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin: var(--s3) calc(var(--s2) * -1) 0;
+  padding: var(--s1) var(--s2) calc(var(--s1) + env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-top: 1px solid var(--line-structure);
+}
+
+.detail-act .state {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--t-label);
+  color: var(--ink-muted);
+}
+
+.detail-act .btn { flex: none; width: auto; }
+
+/* ── 접었다 펴는 묶음 (온보딩·필터) ──────────────────── */
+
+.fold {
+  display: flex;
+  align-items: center;
+  gap: var(--s1);
+  width: 100%;
+  min-height: var(--s6);
+  margin-top: var(--s3);
+  padding: 0;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--line-support);
+  text-align: left;
+  font-weight: var(--w-medium);
+  cursor: pointer;
+}
+
+.fold .desc {
+  margin-left: auto;
+  font-size: var(--t-label);
+  font-weight: var(--w-regular);
+  color: var(--ink-muted);
+}
+
+.fold-body[hidden] { display: none; }
 
 /* 가로로 눕히면 세로가 400px 남짓입니다. 고정 영역을 줄여 본문을 확보합니다. */
 @media (max-height: 480px) {

@@ -219,14 +219,6 @@ export function recentlyDone(view, n = 5) {
     .slice(0, n);
 }
 
-/** 아직 확인하지 않은 중요 항목(필수·주의). 홈에서 놓친 것을 잡아 줍니다. */
-export function unchecked(view, n = 5) {
-  return view.visible
-    .filter((i) => i.status === '확인 전' && (i.importance === '필수' || i.importance === '주의'))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, n);
-}
-
 /** 현재 구간(밴드) id. 없으면 가장 가까운 다음 구간. */
 export function currentBandId(view) {
   const bands = content.bands.map((b) => {

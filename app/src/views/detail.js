@@ -6,6 +6,7 @@ import { STATUSES, GEAR_STATES, BAGS, REACTIONS } from '../store.js';
 import { getContent } from '../model.js';
 import { esc, importanceTag, TYPE_ICON, STATUS_ICON, itemList } from '../ui.js';
 import { icon } from '../icons.js';
+import * as toast from '../toast.js';
 import { fmtFull, fmtStamp, toISO } from '../dates.js';
 
 function windowText(item, anchors) {
@@ -160,6 +161,15 @@ export default {
         <h3>관련 항목</h3>
         ${itemList(related, { showPhase: true })}
       </div>` : ''}
+
+      <div class="detail-act">
+        <span class="state">${icon(STATUS_ICON[item.status], 14)} ${esc(item.status)}${
+          e.doneAt ? ` · ${esc(fmtFull(new Date(`${e.doneAt}T00:00:00`)))} ${esc(store.memberName(e.doneBy))}` : ''
+        }</span>
+        <button class="btn ${item.status === '완료' ? '' : 'btn-primary'}" data-role="primary">
+          ${item.status === '완료' ? '완료 취소' : '완료로 기록'}
+        </button>
+      </div>
     </main>`;
   },
 
@@ -168,8 +178,24 @@ export default {
     if (!item) return;
     let reaction = REACTIONS[0];
 
+    // 상세를 열었다는 것은 내용을 봤다는 뜻입니다. '확인했어요' 를 손으로 누르게 하지 않습니다.
+    store.markSeen(item);
+
+    root.querySelector('[data-role="primary"]').addEventListener('click', () => {
+      const prev = item.status;
+      const next = prev === '완료' ? '확인했어요' : '완료';
+      store.setStatus(item, next);
+      toast.show(next === '완료' ? '완료로 기록했어요' : '완료를 취소했어요', {
+        undo: () => store.setStatus(item, prev),
+      });
+    });
+
     root.querySelectorAll('[data-role="status"]').forEach((el) =>
-      el.addEventListener('click', () => store.setStatus(item, el.dataset.value)));
+      el.addEventListener('click', () => {
+        const prev = item.status;
+        store.setStatus(item, el.dataset.value);
+        toast.show(`${el.dataset.value}(으)로 바꿨어요`, { undo: () => store.setStatus(item, prev) });
+      }));
 
     root.querySelectorAll('[data-role="gear"]').forEach((el) =>
       el.addEventListener('click', () => store.setGear(item, el.dataset.value)));

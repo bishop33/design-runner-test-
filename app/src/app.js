@@ -2,7 +2,9 @@
 
 import * as store from './store.js';
 import { loadContent, buildView } from './model.js';
-import { tabbar, nextStatus } from './ui.js';
+import { tabbar, toggleStatus } from './ui.js';
+import * as order from './order.js';
+import * as toast from './toast.js';
 
 import onboarding from './views/onboarding.js';
 import today from './views/today.js';
@@ -71,6 +73,12 @@ export async function render() {
   const view = buildView();
   current = { route, view };
 
+  // 화면이 바뀌면 목록 순서 잠금을 풉니다. 같은 화면에 머무는 동안에는 유지됩니다.
+  if (route.path !== activePath) {
+    order.release();
+    toast.hide();
+  }
+
   const html = await route.view.render({ view, params: route.params, ui });
   root.innerHTML = `<div class="shell">${html}${route.tab ? tabbar(route.tab) : ''}</div>`;
   root.removeAttribute('aria-busy');
@@ -93,7 +101,12 @@ root.addEventListener('click', async (ev) => {
   }
   if (act === 'cycle' && item) {
     ev.preventDefault();
-    await store.setStatus(item, nextStatus(item.status));
+    const prev = item.status;
+    const next = toggleStatus(prev);
+    await store.setStatus(item, next);
+    toast.show(next === '완료' ? '완료로 기록했어요' : '완료를 취소했어요', {
+      undo: () => store.setStatus(item, prev),
+    });
   }
 });
 

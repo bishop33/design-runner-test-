@@ -26,6 +26,8 @@ MODULES = [
     "src/store.js",
     "src/model.js",
     "src/ui.js",
+    "src/toast.js",
+    "src/order.js",
     "src/views/onboarding.js",
     "src/views/today.js",
     "src/views/timeline.js",

@@ -6,6 +6,8 @@ import { icon } from '../icons.js';
 import { toISO, addDays, today } from '../dates.js';
 
 const draft = {};
+/** 상황 질문은 접어 둡니다. 첫 화면은 날짜 두 개와 시작하기까지만 보이면 됩니다. */
+let open = false;
 
 const YN = [
   ['예', true],
@@ -46,19 +48,26 @@ export default {
       <div class="steps" style="padding-top:var(--s4)">지금 계획 중인 출산 방법</div>
       ${seg('deliveryPlan', [['자연분만', '자연분만'], ['유도분만', '유도분만'], ['제왕절개', '제왕절개'], ['아직 모름', '아직 모름']], p.deliveryPlan)}
 
-      <div class="steps" style="padding-top:var(--s4)">우리 상황</div>
-      ${field('첫째인가요', '', seg('firstBaby', [['첫째예요', true], ['둘째 이상', false]], p.firstBaby))}
-      ${field('조리원을 이용하나요', '아니오를 고르면 조리원 항목을 기본으로 숨깁니다', seg('usesCareCenter', YN, p.usesCareCenter))}
-      ${field('자가용이 있나요', '퇴원·이동 준비 우선순위에 씁니다', seg('hasCar', YN, p.hasCar))}
-      ${field('출산 후 부모님 도움을 받나요', '', seg('parentsHelp', YN, p.parentsHelp))}
-      ${field('회사 휴가·제도를 쓸 수 있나요', '', seg('hasCompanyLeave', YN, p.hasCompanyLeave))}
-      ${field('반려동물이 있나요', '', seg('hasPet', YN, p.hasPet))}
-      ${field('산후도우미를 이용할 계획인가요', '', seg('usesPostpartumHelper', YN, p.usesPostpartumHelper))}
-      ${field('어린이집 이용을 계획하나요', '', seg('plansDaycare', YN, p.plansDaycare))}
+      <button type="button" class="fold" data-role="fold" aria-expanded="${open}">
+        ${icon(open ? 'chevron-down' : 'chevron-right', 18)}
+        우리 상황 알려주기<span class="desc">건너뛰어도 돼요</span>
+      </button>
 
-      <div class="steps" style="padding-top:var(--s4)">함께 쓰는 사람</div>
-      ${field('내 이름', '항목을 누가 완료했는지 표시할 때 씁니다', `<input type="text" data-field="m1" value="${esc(p.members[0].name)}" maxlength="12">`)}
-      ${field('배우자 이름', '', `<input type="text" data-field="m2" value="${esc(p.members[1].name)}" maxlength="12">`)}
+      <div class="fold-body"${open ? '' : ' hidden'}>
+        <p class="hint">해당하지 않는 항목을 숨기고, 필요한 항목을 앞으로 당깁니다. 설정에서 언제든 바꿉니다.</p>
+        ${field('첫째인가요', '', seg('firstBaby', [['첫째예요', true], ['둘째 이상', false]], p.firstBaby))}
+        ${field('조리원을 이용하나요', '아니오를 고르면 조리원 항목을 기본으로 숨깁니다', seg('usesCareCenter', YN, p.usesCareCenter))}
+        ${field('자가용이 있나요', '퇴원·이동 준비 우선순위에 씁니다', seg('hasCar', YN, p.hasCar))}
+        ${field('출산 후 부모님 도움을 받나요', '', seg('parentsHelp', YN, p.parentsHelp))}
+        ${field('회사 휴가·제도를 쓸 수 있나요', '', seg('hasCompanyLeave', YN, p.hasCompanyLeave))}
+        ${field('반려동물이 있나요', '', seg('hasPet', YN, p.hasPet))}
+        ${field('산후도우미를 이용할 계획인가요', '', seg('usesPostpartumHelper', YN, p.usesPostpartumHelper))}
+        ${field('어린이집 이용을 계획하나요', '', seg('plansDaycare', YN, p.plansDaycare))}
+
+        <div class="steps" style="padding-top:var(--s3)">함께 쓰는 사람</div>
+        ${field('내 이름', '항목을 누가 완료했는지 표시할 때 씁니다', `<input type="text" data-field="m1" value="${esc(p.members[0].name)}" maxlength="12">`)}
+        ${field('배우자 이름', '', `<input type="text" data-field="m2" value="${esc(p.members[1].name)}" maxlength="12">`)}
+      </div>
 
       <div class="notice" style="margin-top:var(--s3)">
         ${icon('info', 18)}
@@ -72,6 +81,11 @@ export default {
   },
 
   mount({ root, render }) {
+    root.querySelector('[data-role="fold"]').addEventListener('click', () => {
+      open = !open;
+      render();
+    });
+
     root.querySelectorAll('[data-field]').forEach((el) => {
       if (el.tagName === 'BUTTON') {
         el.addEventListener('click', () => {

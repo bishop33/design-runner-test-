@@ -149,6 +149,22 @@ export async function setStatus(item, status) {
   }, { kind: 'status', itemId: item.id });
 }
 
+/**
+ * 항목을 열어본 것으로 표시합니다.
+ * '확인했어요' 는 말 그대로 내용을 봤다는 뜻이라, 상세를 여는 것으로 갈음합니다.
+ * 손으로 눌러야 하는 단계를 하나 없앱니다. 열람은 활동 목록에 쌓지 않습니다.
+ */
+export async function markSeen(item) {
+  if ((state.items[item.id]?.status || '확인 전') !== '확인 전') return;
+  await commit((d) => {
+    const e = d.items[item.id] || { status: '확인 전', remindOn: '', doneAt: '', doneBy: '', gear: '', bags: {} };
+    e.status = '확인했어요';
+    e.updatedAt = nowISO();
+    e.updatedBy = d.profile.activeMemberId;
+    d.items[item.id] = e;
+  }, { kind: 'status', itemId: item.id });
+}
+
 export async function setDoneAt(item, date) {
   await commit((d) => {
     const e = d.items[item.id];

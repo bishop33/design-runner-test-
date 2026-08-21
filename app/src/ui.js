@@ -2,6 +2,7 @@
 
 import { icon } from './icons.js';
 import { STATUSES } from './store.js';
+import { fmtShort } from './dates.js';
 
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -40,7 +41,7 @@ export const TYPE_GROUPS = [
 export function statusButton(item) {
   const st = item.status;
   return `<button class="status-btn" data-act="cycle" data-id="${item.id}" data-status="${esc(st)}"
-    aria-label="${esc(item.title)} 상태: ${esc(st)}. 눌러서 다음 상태로 바꿉니다" title="${esc(st)}">
+    aria-label="${esc(item.title)} · 상태 ${esc(st)} · 눌러서 ${st === '완료' ? '완료 취소' : '완료로 기록'}" title="${esc(st)}">
     ${icon(STATUS_ICON[st] || 'circle', 22)}</button>`;
 }
 
@@ -49,6 +50,24 @@ export function importanceTag(imp) {
 }
 
 /** 목록 한 줄. 타임라인·홈·검색·주제에서 같은 모양을 씁니다. */
+/**
+ * 오른쪽 끝 한 마디.
+ * 끝낸 일에 남은 기한을 보여 줄 이유가 없습니다. 언제 했는지가 알고 싶은 것입니다.
+ */
+function whenText(item, showWhen) {
+  const done = item.entry.doneAt;
+  if (item.status === '완료' && done) {
+    const d = new Date(`${done}T00:00:00`);
+    return isToday(d) ? '오늘 완료' : `${fmtShort(d)} 완료`;
+  }
+  return showWhen ? item.whenLabel : '';
+}
+
+const isToday = (d) => {
+  const n = new Date();
+  return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate();
+};
+
 /**
  * 목록 한 줄.
  * @param showPhase 시기를 메타에 보일지 (타임라인 밖에서 씀)
@@ -75,9 +94,7 @@ export function itemRow(item, { showPhase = false, showWhen = true } = {}) {
         <button class="row-title" data-act="open" data-id="${item.id}">${esc(item.title)}</button>
         <div class="row-meta">${meta}</div>
       </div>
-      <span class="row-when${late ? ' is-late' : ''}">${esc(
-        showWhen ? item.whenLabel : item.entry.doneAt || '',
-      )}</span>
+      <span class="row-when${late ? ' is-late' : ''}">${esc(whenText(item, showWhen))}</span>
     </div>
   </li>`;
 }
@@ -102,14 +119,17 @@ export function patchRow(rowEl, item, { showWhen = true } = {}) {
   rowEl.classList.toggle('is-skip', item.status === '해당 없음');
 
   const when = rowEl.querySelector('.row-when');
-  when.textContent = showWhen ? item.whenLabel : item.entry.doneAt || '';
+  when.textContent = whenText(item, showWhen);
   when.classList.toggle('is-late', !item.done && item.when === 'past');
 }
 
-/** 상태 버튼을 누르면 다음 상태로. 완료 다음은 확인 전으로 돌아옵니다. */
-export function nextStatus(cur) {
-  const i = STATUSES.indexOf(cur);
-  return STATUSES[(i + 1) % STATUSES.length];
+/**
+ * 목록에서 원을 누르면 완료를 켜고 끕니다.
+ * 5단계를 한 버튼으로 순환시키면 완료까지 세 번 눌러야 하고, 한 번 지나치면
+ * '해당 없음' 이 되어 완료 기록이 지워집니다. 나머지 단계는 상세에서 고릅니다.
+ */
+export function toggleStatus(cur) {
+  return cur === '완료' ? '확인했어요' : '완료';
 }
 
 export function topbar(title, { sub = '', back = null, right = '' } = {}) {

@@ -1,8 +1,9 @@
 // 오늘 — 대시보드가 아니라 '지금 해야 할 일'이 먼저 보이는 화면.
 
 import * as store from '../store.js';
-import { nowList, soonList, recentlyDone, unchecked } from '../model.js';
-import { esc, itemList, tabbar } from '../ui.js';
+import { nowList, soonList, recentlyDone, currentBandId } from '../model.js';
+import { frozen } from '../order.js';
+import { esc, itemList } from '../ui.js';
 import { icon } from '../icons.js';
 import { stageLabel, diffDays, today as td, fmtShort, fmtStamp, fmtFull } from '../dates.js';
 
@@ -32,11 +33,18 @@ export default {
   async render({ view }) {
     const s = store.get();
     const a = view.anchors;
-    const first = nowList(view, 5);
-    const soon = soonList(view, 6, first);
+    // 이 화면에 머무는 동안 순서를 고정합니다. 하나 완료할 때마다 목록이 다시
+    // 늘어서면 두 번째 탭이 엉뚱한 줄에 떨어집니다. 완료한 항목도 자리에 남습니다.
+    const first = frozen('today:now', () => nowList(view, 5), view.byId);
+    const soon = frozen('today:soon', () => soonList(view, 6, first), view.byId);
     const done = recentlyDone(view, 4);
-    const miss = unchecked(view, 4).filter((i) => !first.some((f) => f.id === i.id));
     const log = s.activity.slice(0, 5);
+
+    // 지금 구간의 진행. 얼마나 남았는지 숫자 하나로 보여 줍니다.
+    const bandId = currentBandId(view);
+    const bandItems = view.visible.filter((i) => i.bandId === bandId);
+    const bandDone = bandItems.filter((i) => i.done).length;
+    const left = first.filter((i) => !i.done).length;
 
     return `
     <header class="topbar">
@@ -48,17 +56,19 @@ export default {
       <section class="now">
         <h2>${esc(stageLabel(a) || '날짜를 입력해 주세요')}</h2>
         <div class="marks">${marks(a, s.profile).map((m) => `<span>${m}</span>`).join('')}</div>
+        ${bandItems.length
+          ? `<p class="hint" style="margin-top:var(--s1)">지금 구간 ${bandItems.length}개 중
+             <b class="num">${bandDone}</b>개 완료</p>`
+          : ''}
       </section>
 
       <section class="section">
-        <header><h2>지금 먼저 할 일</h2><span class="count">${first.length}개</span></header>
+        <header><h2>지금 먼저 할 일</h2><span class="count">${left}개 남음</span></header>
         ${itemList(first, { showPhase: true })}
+        ${first.length && !left
+          ? '<p class="hint">여기 있는 일은 다 했어요. 화면을 다시 열면 다음 항목이 올라옵니다.</p>'
+          : ''}
       </section>
-
-      ${miss.length ? `<section class="section">
-        <header><h2>아직 확인하지 않은 중요 항목</h2><span class="count">${miss.length}개</span></header>
-        ${itemList(miss, { showPhase: true })}
-      </section>` : ''}
 
       <section class="section">
         <header><h2>곧 해야 할 일</h2><a class="more" href="#/timeline">타임라인 전체</a></header>

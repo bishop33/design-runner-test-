@@ -1,12 +1,13 @@
 // 검색 — 제목·주제·세부 주제·요약을 대상으로 합니다.
 
 import { search as runSearch } from '../model.js';
+import { frozen } from '../order.js';
 import { esc, itemList } from '../ui.js';
 
 export default {
   async render({ view, ui }) {
     const q = ui.search;
-    const hits = runSearch(view, q);
+    const hits = frozen(`search:${q}`, () => runSearch(view, q), view.byId);
     return `
     <header class="topbar"><h1>검색</h1></header>
     <main class="main" id="main">
