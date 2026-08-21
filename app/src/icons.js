@@ -61,5 +61,7 @@ export function icon(name, size = 20) {
       return `<path d="${d}"/>`;
     })
     .join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+  // 24px 기준의 2px 획을 14px 로 줄여 쓰면 옆의 12px 글자보다 아이콘이 무거워 보입니다.
+  const stroke = size <= 16 ? 1.5 : 2;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
 }

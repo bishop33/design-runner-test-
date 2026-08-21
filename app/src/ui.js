@@ -45,7 +45,14 @@ export function statusButton(item) {
     ${icon(STATUS_ICON[st] || 'circle', 22)}</button>`;
 }
 
-export function importanceTag(imp) {
+/**
+ * 중요도 표시.
+ * 목록에서는 '필수·주의' 만 칩으로 보여 줍니다. 356개 중 239개가 권장·선택이라
+ * 전부 표시하면 칩이 배경이 되어 정작 필수가 묻힙니다. 없으면 필수가 아니라는 뜻입니다.
+ * 네 단계 전부는 상세 화면에서 봅니다.
+ */
+export function importanceTag(imp, { always = false } = {}) {
+  if (!always && imp !== '필수' && imp !== '주의') return '';
   return `<span class="imp" data-imp="${esc(imp)}">${esc(imp)}</span>`;
 }
 

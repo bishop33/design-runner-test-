@@ -52,7 +52,7 @@ export default {
       <h2 class="detail-title">${esc(item.title)}</h2>
       <div class="detail-meta">
         <span class="type-mark">${icon(TYPE_ICON[item.type] || 'square-check', 14)}</span>${esc(item.type)}
-        ${importanceTag(item.importance)}
+        ${importanceTag(item.importance, { always: true })}
         <span class="sep">·</span>${esc(item.action)}
         <span class="sep">·</span>대상 ${esc(item.audience)}
         ${item.condition !== '공통' ? `<span class="sep">·</span>${esc(item.condition)}` : ''}

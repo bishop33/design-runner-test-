@@ -120,7 +120,7 @@ export default {
           const open = filtering || f.open.has(b.id);
           return `<section class="band" data-when="${when}" data-band="${b.id}">
             <button class="band-head" data-role="band" data-band="${b.id}" aria-expanded="${open}">
-              ${icon(open ? 'chevron-down' : 'chevron-right', 18)}
+              <span class="band-head-mark">${icon(open ? 'chevron-down' : 'chevron-right', 20)}</span>
               <span class="band-head-text">
                 <span class="band-head-line">
                   <h3>${esc(b.phase)}</h3>

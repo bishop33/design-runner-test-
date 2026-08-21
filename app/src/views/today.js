@@ -14,6 +14,14 @@ function dday(label, date, { est = false } = {}) {
   return `${label} <b>${rel}</b> ${fmtShort(date)}${est ? ' 추정' : ''}`;
 }
 
+/** 상단바는 스크롤해도 남습니다. 가장 자주 확인하는 한 마디만 압축해 둡니다. */
+function shortMark(a) {
+  const target = a.hasBirth ? null : a.due;
+  if (!target) return '';
+  const d = diffDays(target, td());
+  return d >= 0 ? `출산 D-${d}` : `출산 예정일 ${-d}일 지남`;
+}
+
 /** 출산 전에는 예정일·입원일, 출산 후에는 출생일·조리원·집 복귀일을 보여 줍니다. */
 function marks(a, profile) {
   if (a.hasBirth) {
@@ -48,7 +56,7 @@ export default {
 
     return `
     <header class="topbar">
-      <h1>오늘<span class="sub">${esc(fmtFull(td()))}</span></h1>
+      <h1>오늘<span class="sub">${esc([stageLabel(a), shortMark(a)].filter(Boolean).join(' · ') || fmtFull(td()))}</span></h1>
       <a class="btn-icon" href="#/activity" aria-label="부부 활동 내역">${icon('users', 20)}</a>
     </header>
 
