@@ -26,6 +26,10 @@ html {
 
 body {
   margin: 0;
+  /* 한글은 단어 중간에서 줄이 꺾이면 읽기가 끊깁니다. 단어 단위로 줄바꿈하고,
+     공백 없는 긴 문자열(URL 등)만 overflow-wrap 이 잡습니다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
   /* 탭할 때 회색 사각형이 번쩍이지 않게. 초점 표시는 :focus-visible 로 따로 둡니다 */
   -webkit-tap-highlight-color: transparent;
   /* 더블탭 확대를 끄면 탭 반응이 즉시 옵니다. 손가락 확대는 그대로 됩니다 */
