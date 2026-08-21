@@ -8,9 +8,14 @@ let content = null;
 
 export async function loadContent() {
   if (content) return content;
-  const res = await fetch(new URL('../data/content.json', import.meta.url));
-  if (!res.ok) throw new Error(`콘텐츠를 불러오지 못했습니다 (${res.status})`);
-  content = await res.json();
+  // 단일 파일로 묶은 빌드(tools/build-standalone.py)는 콘텐츠를 여기에 미리 넣어 둡니다.
+  if (globalThis.__JUNBI_CONTENT__) {
+    content = globalThis.__JUNBI_CONTENT__;
+  } else {
+    const res = await fetch(new URL('../data/content.json', import.meta.url));
+    if (!res.ok) throw new Error(`콘텐츠를 불러오지 못했습니다 (${res.status})`);
+    content = await res.json();
+  }
   content.byId = Object.fromEntries(content.items.map((i) => [i.id, i]));
   content.bandById = Object.fromEntries(content.bands.map((b) => [b.id, b]));
   content.chainById = Object.fromEntries((content.meta.chains || []).map((c) => [c.id, c]));

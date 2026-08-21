@@ -63,6 +63,22 @@ tools/
 python3 tools/sheet-to-content.py
 ```
 
+### 파일 하나로 묶기
+
+서버 없이 열거나 링크로 공유해야 하면 전부 인라인한 단일 파일을 만듭니다.
+
+```bash
+python3 tools/build-standalone.py
+```
+
+| 출력 | 쓰임 |
+|---|---|
+| `dist/junbi.html` | 브라우저로 바로 여는 완성 문서 (`file://` 로도 동작) |
+| `dist/junbi.artifact.html` | `<head>`/`<body>` 를 감싸 주는 환경용 조각 |
+
+번들러를 설치하지 않으려고 직접 묶습니다. 모듈마다 함수로 감싸 스코프를 유지하므로
+이름이 섞이지 않습니다. `dist/` 는 생성물이라 커밋하지 않습니다.
+
 ### 원칙
 
 - 콘텐츠 원본과 사용자 상태를 분리합니다. `content.json` 에는 완료 여부·메모를 쓰지 않습니다.

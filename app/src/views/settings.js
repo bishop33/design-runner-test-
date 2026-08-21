@@ -86,12 +86,31 @@ export default {
         store.saveProfile({ members });
       }));
 
-    root.querySelector('[data-role="export"]').addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(store.get(), null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
+    root.querySelector('[data-role="export"]').addEventListener('click', async () => {
+      const json = JSON.stringify(store.get(), null, 2);
+      const filename = 'junbi-record.json';
+
+      // 내려받기를 막는 뷰어(임베드·인앱 브라우저 등)에서는 호스트가 대신 저장해 줍니다.
+      // 그런 호스트가 없으면 평소대로 blob 링크를 씁니다.
+      let host = null;
+      try {
+        host = await globalThis.claude?.use('downloads');
+      } catch {
+        host = null;
+      }
+      if (host) {
+        try {
+          await host.save({ filename, data: json });
+        } catch {
+          /* 사용자가 취소했거나 호스트가 거절했습니다. 알림 없이 넘어갑니다. */
+        }
+        return;
+      }
+
+      const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'junbi-record.json';
+      a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
     });
