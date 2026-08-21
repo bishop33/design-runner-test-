@@ -1,0 +1,143 @@
+@import 'tailwindcss';
+
+/* 다크모드: html.dark 클래스 기준 (시스템 설정은 초기 스크립트가 클래스로 반영) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+  색·간격 체계는 저장소의 design-tokens.css(brand-kb 사본)를 기반으로 한
+  이 서비스 고유 시맨틱 토큰입니다. 무채색 + 채도색 2개(accent/danger)만 씁니다.
+  danger(#d8483a)는 critical·마감 경고 전용, accent(#0c74ee)는 CTA·활성 전용.
+*/
+:root {
+  /* 무채색 원색 — design-tokens.css의 g 스케일 */
+  --g0: #ffffff;
+  --g50: #f7f8f9;
+  --g100: #eef0f2;
+  --g200: #e2e5e9;
+  --g300: #c9cfd6;
+  --g400: #98a1ac;
+  --g500: #6b7480;
+  --g700: #3d4550;
+  --g900: #14181e;
+
+  /* 시맨틱 — 라이트.
+     muted/faint/채도색은 WCAG AA(작은 글자 4.5:1)를 만족하도록
+     g 스케일·signal에서 한 단계 눌러 조정한 값입니다. */
+  --bg: var(--g0);
+  --surface: var(--g50);
+  --surface-2: var(--g100);
+  --ink: var(--g900);
+  --ink-body: var(--g700);
+  --ink-muted: #525b66; /* g500을 4.5:1 이상으로 조정 */
+  --ink-faint: var(--g500);
+  --line: rgb(20 24 30 / 12%);
+  --line-strong: rgb(20 24 30 / 24%);
+
+  --accent: #0a67d3; /* signal(#0c74ee)을 흰 배경 4.5:1 이상으로 조정 */
+  --accent-fg: #ffffff;
+  --accent-surface: rgb(10 103 211 / 8%);
+
+  --danger: #b83a2a;
+  --danger-fg: #ffffff;
+  --danger-surface: rgb(184 58 42 / 8%);
+
+  --ok: #1a7f4e;
+  --ok-surface: rgb(26 127 78 / 10%);
+}
+
+.dark {
+  /* 시맨틱 — 다크 (새벽 수유 중 사용을 가정해 순검정 대신 짙은 무채색) */
+  --bg: #101318;
+  --surface: #171b21;
+  --surface-2: #1f242c;
+  --ink: #eef0f2;
+  --ink-body: #c9cfd6;
+  --ink-muted: #98a1ac;
+  --ink-faint: #7d8794;
+  --line: rgb(238 240 242 / 12%);
+  --line-strong: rgb(238 240 242 / 24%);
+
+  --accent: #5aa2f5;
+  --accent-fg: #101318;
+  --accent-surface: rgb(90 162 245 / 12%);
+
+  --danger: #ef7a6d;
+  --danger-fg: #101318;
+  --danger-surface: rgb(239 122 109 / 12%);
+
+  --ok: #5fd08a;
+  --ok-surface: rgb(95 208 138 / 12%);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-body: var(--ink-body);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-surface: var(--accent-surface);
+  --color-danger: var(--danger);
+  --color-danger-fg: var(--danger-fg);
+  --color-danger-surface: var(--danger-surface);
+  --color-ok: var(--ok);
+  --color-ok-surface: var(--ok-surface);
+
+  --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+
+  --radius-sm: 8px;
+  --radius-lg: 24px;
+  --radius-pill: 100px;
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 출생일이 있는 방문(공유 링크·재방문)은 마운트 전까지 목록을 감춰
+   상단에 개인화 섹션이 끼어들 때 생기는 레이아웃 시프트를 없앱니다.
+   출생일이 없는 첫 방문·검색엔진에는 전체 목록이 그대로 보입니다. */
+html.has-birth .hide-until-mounted {
+  display: none;
+}
+
+/* 같은 이유로, 목록이 채워지기 전 푸터가 화면 안에 들어왔다가
+   밀려나며 생기는 시프트를 막기 위해 본문 최소 높이를 확보합니다. */
+html.has-birth main {
+  min-height: 100dvh;
+}
+
+/* 등장 모션 — 1회로 끝. 스크롤 반응·반복 애니메이션 없음 */
+@media (prefers-reduced-motion: no-preference) {
+  .rise-once {
+    animation: rise-once 0.36s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes rise-once {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
