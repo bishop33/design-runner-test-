@@ -96,6 +96,7 @@ root.addEventListener('click', async (ev) => {
   const item = current.view.byId[btn.dataset.id];
 
   if (act === 'open' && item) {
+    store.rememberOpened(item.id);
     location.hash = `#/item/${encodeURIComponent(item.id)}`;
     return;
   }
@@ -128,6 +129,7 @@ store.subscribe((_state, hint) => {
 (async function boot() {
   try {
     await Promise.all([store.init(), loadContent()]);
+    if (store.get().onboarded) await store.touchVisit();
     await render();
   } catch (e) {
     root.innerHTML = `<div class="shell"><main class="main"><p class="boot">${e.message}<br>

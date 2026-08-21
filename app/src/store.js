@@ -43,6 +43,9 @@ function emptyState() {
     experiences: {},  // itemId -> [{ id, by, at, reaction, text }]
     customItems: [],  // 사용자가 직접 추가한 항목
     activity: [],     // [{ id, at, by, itemId, title, kind, detail }] 최신순
+    visits: {},       // memberId -> { lastAt, prevAt } 재방문 화면의 기준점
+    lastOpenedItem: '', // 마지막으로 본 항목 — 이어서 보기
+    lastSeenStage: '',  // 마지막으로 본 주차 라벨 — 주가 바뀐 첫 방문 감지
   };
 }
 
@@ -120,6 +123,46 @@ function pushActivity(draft, { itemId, title, kind, detail }) {
 }
 
 /* ── 변경 동작 ────────────────────────────────────────── */
+
+/**
+ * 세션 시작을 기록합니다. 마지막 방문에서 6시간 넘게 지났으면 새 방문으로 치고,
+ * 그 이전 방문 시각을 prevAt 으로 남깁니다. '지난 방문 이후' 는 prevAt 기준으로 잘라 보여 줍니다.
+ * 저장만 하고 알리지 않습니다 — 이 일로 화면을 다시 그릴 이유가 없습니다.
+ */
+export async function touchVisit() {
+  const me = state.profile.activeMemberId;
+  const v = state.visits[me] || { lastAt: '', prevAt: '' };
+  const now = Date.now();
+  const gap = v.lastAt ? now - new Date(v.lastAt).getTime() : Infinity;
+  if (gap > 6 * 3600 * 1000) v.prevAt = v.lastAt;
+  v.lastAt = new Date(now).toISOString();
+  state.visits[me] = v;
+  await saveState(state);
+}
+
+/**
+ * 주차 라벨을 확인하고, 지난 방문과 달라졌으면 이전 라벨을 돌려줍니다.
+ * 임신 주차는 앱이 스스로 만들어내는 유일한 '새로움' 이라, 주가 바뀐
+ * 첫 방문에는 그것부터 알려 줍니다. 같으면 null.
+ */
+export async function stageChanged(label) {
+  if (!label || state.lastSeenStage === label) return null;
+  const prev = state.lastSeenStage;
+  state.lastSeenStage = label;
+  await saveState(state);
+  return prev || null;
+}
+
+/** 이 사람의 지난 방문 시각. 첫 방문이면 ''. */
+export function prevVisitAt() {
+  return state.visits[state.profile.activeMemberId]?.prevAt || '';
+}
+
+/** 마지막으로 연 항목. 저장만 하고 알리지 않습니다. */
+export async function rememberOpened(itemId) {
+  state.lastOpenedItem = itemId;
+  await saveState(state);
+}
 
 export async function saveProfile(patch, { onboarded } = {}) {
   await commit((d) => {

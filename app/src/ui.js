@@ -117,10 +117,17 @@ export function itemList(items, opts) {
  */
 export function patchRow(rowEl, item, { showWhen = true } = {}) {
   const btn = rowEl.querySelector('.status-btn');
+  const wasDone = btn.dataset.status === '완료';
   btn.dataset.status = item.status;
   btn.title = item.status;
   btn.setAttribute('aria-label', `${item.title} 상태: ${item.status}. 눌러서 다음 상태로 바꿉니다`);
   btn.innerHTML = icon(STATUS_ICON[item.status] || 'circle', 22);
+  if (item.status === '완료' && !wasDone) {
+    // 완료 순간 한 번만. 재렌더에서는 다시 뛰지 않습니다.
+    btn.classList.remove('pop');
+    void btn.offsetWidth;
+    btn.classList.add('pop');
+  }
 
   rowEl.classList.toggle('is-done', item.status === '완료');
   rowEl.classList.toggle('is-skip', item.status === '해당 없음');

@@ -3,7 +3,7 @@
 import * as store from '../store.js';
 import { nowList, soonList, recentlyDone, currentBandId } from '../model.js';
 import { frozen } from '../order.js';
-import { esc, itemList } from '../ui.js';
+import { esc, itemList, patchRow } from '../ui.js';
 import { icon } from '../icons.js';
 import { stageLabel, diffDays, today as td, fmtShort, fmtStamp, fmtFull } from '../dates.js';
 
@@ -37,7 +37,63 @@ function marks(a, profile) {
   ].filter(Boolean);
 }
 
+/**
+ * 여정 진행 바. 임신 중에는 40주, 출산 후에는 24개월을 기준으로 채웁니다.
+ * 예정일·출생일에서 계산되는 값이라 콘텐츠를 만들어내는 것이 아닙니다.
+ * 홈에서 채도색은 이 채움과 탭 아이콘 두 곳뿐입니다.
+ */
+function journeyBar(a) {
+  const now = td();
+  let pct = null;
+  let cap = '';
+  if (a.hasBirth && a.birth && now >= a.birth) {
+    const m = diffDays(now, a.birth) / 30.44;
+    pct = Math.min(100, (m / 24) * 100);
+    cap = '생후 24개월까지';
+  } else if (a.lmp) {
+    const w = diffDays(now, a.lmp) / 7;
+    if (w >= 0) {
+      pct = Math.min(100, (w / 40) * 100);
+      cap = '40주 중';
+    }
+  }
+  if (pct === null) return '';
+  return `<div class="journey" role="img" aria-label="${cap} ${Math.round(pct)}% 지남">
+    <span class="journey-fill" style="width:${pct.toFixed(1)}%"></span>
+  </div>`;
+}
+
+/** 주 단위 라벨 (일 단위 제외) — '임신 38주', '생후 2개월' 처럼 굵은 전환만 잡습니다. */
+function coarseStage(a) {
+  const l = stageLabel(a);
+  return l.replace(/ \d+일$/, '');
+}
+
+let stageNews = null; // 이번 세션에서 감지한 주차 전환 (렌더 간 유지)
+let stageChecked = false;
+
 export default {
+  /** 순서를 잠가 두므로 목록 구성이 안 바뀝니다. 그 줄과 숫자만 고칩니다. */
+  patch({ root, view, itemId }) {
+    const item = view.byId[itemId];
+    const btn = root.querySelector(`.status-btn[data-id="${itemId}"]`);
+    if (!item || !btn) return false;
+    patchRow(btn.closest('.row'), item, { showWhen: true });
+
+    const leftEl = root.querySelector('[data-role="left"]');
+    if (leftEl) {
+      const ids = [...root.querySelectorAll('[data-first] .status-btn')].map((b) => b.dataset.id);
+      const left = ids.filter((id) => !view.byId[id]?.done).length;
+      leftEl.textContent = `${left}개 남음`;
+    }
+    const progEl = root.querySelector('[data-role="bandprog"]');
+    if (progEl && item.bandId === progEl.dataset.band) {
+      const all = view.visible.filter((i) => i.bandId === item.bandId);
+      progEl.querySelector('b').textContent = all.filter((i) => i.done).length;
+    }
+    return true;
+  },
+
   async render({ view }) {
     const s = store.get();
     const a = view.anchors;
@@ -54,6 +110,39 @@ export default {
     const bandDone = bandItems.filter((i) => i.done).length;
     const left = first.filter((i) => !i.done).length;
 
+    // ── 지난 방문 이후 ─ 다시 열었을 때 "그동안 무슨 일이 있었나" 부터 보여 줍니다.
+    // 배우자의 활동이 핵심입니다. 내가 한 일은 내가 압니다.
+    const prevAt = store.prevVisitAt();
+    const me = s.profile.activeMemberId;
+    const sincePartner = prevAt
+      ? s.activity.filter((e) => e.at > prevAt && e.by !== me)
+      : [];
+    const partnerDone = sincePartner.filter((e) => e.kind === '상태' && /→ 완료$/.test(e.detail || ''));
+    const partnerNotes = sincePartner.filter((e) => e.kind === '메모');
+    const resume = s.lastOpenedItem && !view.byId[s.lastOpenedItem]?.done ? view.byId[s.lastOpenedItem] : null;
+
+    // ── 이 시기 알아두기 ─ 지금 구간의 가이드·증상 중 아직 안 읽은 것.
+    // 할 일만 쌓으면 앱이 숙제장이 됩니다. 왜 이 시기가 특별한지도 함께 보여 줍니다.
+    // 주가 바뀐 첫 방문에는 이 묶음이 "00주차가 됐어요" 로 승격되고 세 개를 보여 줍니다.
+    if (!stageChecked) {
+      stageChecked = true;
+      stageNews = await store.stageChanged(coarseStage(a));
+    }
+    const learn = bandItems
+      .filter((i) => (i.typeGroup === 'guide' || i.typeGroup === 'signal') && i.status === '확인 전')
+      .sort((a, b) => b.score - a.score)
+      .slice(0, stageNews ? 3 : 2);
+
+    // 주가 바뀐 첫 방문에는 이 묶음이 "00주차가 됐어요" 로 맨 위에 옵니다.
+    // 앱이 스스로 만들어내는 새로움이라, 재방문의 첫인사로 그것부터 보여 줍니다.
+    const learnSection = learn.length
+      ? `<section class="section">
+          <header><h2>${stageNews ? `${esc(coarseStage(a))}가 됐어요` : '이 시기 알아두기'}</h2></header>
+          ${stageNews ? `<p class="hint" style="margin-bottom:var(--s1)">이번 주에 새로 알아두면 좋은 것들이에요.</p>` : ''}
+          ${itemList(learn)}
+        </section>`
+      : '';
+
     return `
     <header class="topbar">
       <h1>오늘<span class="sub">${esc([stageLabel(a), shortMark(a)].filter(Boolean).join(' · ') || fmtFull(td()))}</span></h1>
@@ -63,20 +152,40 @@ export default {
     <main class="main" id="main">
       <section class="now">
         <h2>${esc(stageLabel(a) || '날짜를 입력해 주세요')}</h2>
+        ${journeyBar(a)}
         <div class="marks">${marks(a, s.profile).map((m) => `<span>${m}</span>`).join('')}</div>
         ${bandItems.length
-          ? `<p class="hint" style="margin-top:var(--s1)">지금 구간 ${bandItems.length}개 중
+          ? `<p class="hint" style="margin-top:var(--s1)" data-role="bandprog" data-band="${bandId}">지금 구간 ${bandItems.length}개 중
              <b class="num">${bandDone}</b>개 완료</p>`
           : ''}
       </section>
 
+      ${stageNews ? learnSection : ''}
+
+      ${sincePartner.length || resume ? `<section class="section">
+        <header><h2>지난 방문 이후</h2></header>
+        <div class="since">
+          ${partnerDone.length ? `<p>${icon('circle-check-big', 16)}
+            <span><b>${esc(store.memberName(partnerDone[0].by))}</b>님이 ${partnerDone.length}개를 완료했어요
+            <span class="hint">${partnerDone.slice(0, 2).map((e) => esc(e.title)).join(' · ')}${partnerDone.length > 2 ? ' 외' : ''}</span></span></p>` : ''}
+          ${partnerNotes.length ? `<p>${icon('pen-line', 16)}
+            <span><b>${esc(store.memberName(partnerNotes[0].by))}</b>님이 메모 ${partnerNotes.length}개를 남겼어요
+            <a href="#/item/${encodeURIComponent(partnerNotes[0].itemId)}">${esc(partnerNotes[0].title)}</a></span></p>` : ''}
+          ${resume ? `<p>${icon('book-open', 16)}
+            <span>보던 항목 이어서 보기
+            <a href="#/item/${encodeURIComponent(resume.id)}">${esc(resume.title)}</a></span></p>` : ''}
+        </div>
+      </section>` : ''}
+
       <section class="section">
-        <header><h2>지금 먼저 할 일</h2><span class="count">${left}개 남음</span></header>
-        ${itemList(first, { showPhase: true })}
+        <header><h2>지금 먼저 할 일</h2><span class="count" data-role="left">${left}개 남음</span></header>
+        <div data-first>${itemList(first, { showPhase: true })}</div>
         ${first.length && !left
           ? '<p class="hint">여기 있는 일은 다 했어요. 화면을 다시 열면 다음 항목이 올라옵니다.</p>'
           : ''}
       </section>
+
+      ${stageNews ? '' : learnSection}
 
       <section class="section">
         <header><h2>곧 해야 할 일</h2><a class="more" href="#/timeline">타임라인 전체</a></header>

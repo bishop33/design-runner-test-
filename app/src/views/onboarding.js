@@ -3,11 +3,25 @@
 import * as store from '../store.js';
 import { esc } from '../ui.js';
 import { icon } from '../icons.js';
-import { toISO, addDays, today } from '../dates.js';
+import { toISO, addDays, today, buildAnchors, stageLabel, diffDays } from '../dates.js';
 
 const draft = {};
 /** 상황 질문은 접어 둡니다. 첫 화면은 날짜 두 개와 시작하기까지만 보이면 됩니다. */
 let open = false;
+
+/**
+ * 예정일을 넣는 순간 무엇이 계산되는지 바로 보여 줍니다.
+ * 첫 입력에 대한 즉각 보상 — 이 한 줄이 "내 앱이 됐다" 는 느낌을 만듭니다.
+ */
+function echo(dueDate) {
+  if (!dueDate) return '';
+  const a = buildAnchors({ dueDate });
+  const label = stageLabel(a);
+  if (!label) return '';
+  const d = diffDays(a.due, today());
+  const dday = d === 0 ? '오늘이 예정일이에요' : d > 0 ? `출산까지 D-${d}` : `예정일이 ${-d}일 지났어요`;
+  return `지금 <b>${label}</b> · ${dday}`;
+}
 
 const YN = [
   ['예', true],
@@ -37,11 +51,12 @@ export default {
     <header class="topbar"><h1>준비<span class="sub">임신부터 출산 후 24개월까지</span></h1></header>
     <main class="main onb" id="main">
       <div class="lead">
-        <h2>먼저 두 가지 날짜만 알려 주세요</h2>
-        <p>이 날짜로 모든 항목의 시기를 계산합니다. 나머지는 건너뛰어도 되고 설정에서 언제든 바꿀 수 있습니다.</p>
+        <h2>출산 예정일 하나로<br>시작할 수 있어요</h2>
+        <p>임신부터 생후 24개월까지 356가지 할 일과 검사 일정을 예정일에 맞춰 계산해 드립니다. 부부가 함께 확인하고 기록합니다.</p>
       </div>
 
       ${field('출산 예정일', '임신 주차 계산의 기준입니다', `<input type="date" data-field="dueDate" value="${esc(p.dueDate || defaultDue)}" required>`)}
+      <div class="onb-echo" data-role="echo" aria-live="polite">${echo(p.dueDate || defaultDue)}</div>
       ${field('병원 입원 예정일', '비워 두면 출산 예정일 하루 전으로 계산합니다', `<input type="date" data-field="admissionDate" value="${esc(p.admissionDate)}">`)}
       ${field('아기가 태어났다면 출생일', '출산 전이라면 비워 둡니다', `<input type="date" data-field="birthDate" value="${esc(p.birthDate)}">`)}
 
@@ -95,6 +110,9 @@ export default {
       } else {
         el.addEventListener('input', () => {
           draft[el.dataset.field] = el.value;
+          if (el.dataset.field === 'dueDate') {
+            root.querySelector('[data-role="echo"]').innerHTML = echo(el.value);
+          }
         });
       }
     });
