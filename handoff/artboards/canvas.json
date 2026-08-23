@@ -1,0 +1,25 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "리포트 v1" },
+    { "id": "page-2", "name": "디렉션 탐색" }
+  ],
+  "artboards": [
+    { "file": "Main.dc.html", "title": "01 판결", "x": 0, "y": 0, "w": 794, "h": 1123, "print": "fixed", "page": "page-1" },
+    { "file": "Valuation.dc.html", "title": "02 밸류에이션", "x": 894, "y": 0, "w": 794, "h": 1123, "print": "fixed", "page": "page-1" },
+    { "file": "Financials.dc.html", "title": "03 재무 분석", "x": 1788, "y": 0, "w": 794, "h": 1123, "print": "fixed", "page": "page-1" },
+    { "file": "Debates.dc.html", "title": "04 논점·리스크", "x": 2682, "y": 0, "w": 794, "h": 1123, "print": "fixed", "page": "page-1" },
+    { "file": "Chassis.dc.html", "title": "05 공용 섀시", "x": 3576, "y": 0, "w": 794, "h": 1123, "print": "fixed", "page": "page-1" },
+    { "file": "DirectionBigNumber.dc.html", "title": "A 빅 넘버 버딕트", "x": 0, "y": 0, "w": 794, "h": 1123, "print": "fixed", "page": "page-2" },
+    { "file": "DirectionBento.dc.html", "title": "B 절제된 벤토", "x": 894, "y": 0, "w": 794, "h": 1123, "print": "fixed", "page": "page-2" },
+    { "file": "DirectionMidnight.dc.html", "title": "C 미드나이트 (스트레치)", "x": 1788, "y": 0, "w": 794, "h": 1123, "print": "fixed", "page": "page-2" }
+  ],
+  "annotations": [
+    { "id": "note-data", "x": 0, "y": -200, "w": 380, "page": "page-1", "text": "표본 데이터는 고려공업검사 감사보고서 실수치입니다 (딥서치 AI 기업조사 리포트 2026-08-13에서 추출).\n피어 재무 셀은 비워두고 Finorma 조회 슬롯으로 표기 — 지어낸 수치는 없습니다." },
+    { "id": "note-format", "x": 440, "y": -200, "w": 420, "page": "page-1", "text": "포맷 원칙: 1페이지 = 판결문(결론 먼저) · 가정 전면 공개 · 점 추정 금지(범위·시나리오·민감도) · 모든 수치에 출처와 기준일 · 층위 표기(AI 리포트/확정 평가) 생략 불가.\n산업 리포트는 5페이지 섀시의 슬롯 스왑으로 같은 엔진에서 생성합니다." },
+    { "id": "note-research", "x": 0, "y": -260, "w": 500, "page": "page-2", "text": "핀터레스트·비핸스 트렌드 리서치(2025–2026) 결과로 만든 판결 페이지 디렉션 3안.\n핵심 발견: 우리 브랜드 제약(Pretendard 단일 서체 + Signal 블루 1색 + 노 그라데이션)은 지금 가장 신뢰받는 트렌드 축 — 스위스 그리드 × 빅 넘버 × 모노크롬 액센트 — 와 같은 문법. 제약을 지키는 게 곧 트렌드." },
+    { "id": "note-dir-a", "x": 0, "y": -110, "w": 380, "page": "page-2", "text": "A 빅 넘버 버딕트 — FTSE 상장사들이 쓰는 오버사이즈 숫자 관행. 결론이 숫자인 밸류에이션과 구조적으로 동형. 썸네일에서도 메시지가 읽힘.\n트레이드오프: 정보 밀도가 낮아져 1페이지에 담기는 항목 수가 줄어듦." },
+    { "id": "note-dir-b", "x": 894, "y": -110, "w": 380, "page": "page-2", "text": "B 절제된 벤토 — 셀 크기 = 정보 중요도. 이질적 정보(가치·가정·민감도)를 한 화면에 구조화. 블루 반전 셀 하나가 시선 앵커.\n트레이드오프: 셀 단위라 서사 흐름이 약함. 카드 배경 대신 탑 룰로 절제해 브랜드 규칙 유지." },
+    { "id": "note-dir-c", "x": 1788, "y": -110, "w": 380, "page": "page-2", "text": "C 미드나이트 (스트레치) — 핀테크 임원 보고 미학. 썸네일 임팩트 최대.\n주의: 브랜드 '밝은 지면' 규칙 위반 + A4 인쇄 부적합(전면 솔리드). 디지털 배포용 표지 한정으로만 제안." }
+  ],
+  "launch": { "view": "canvas", "page": "page-2" }
+}
